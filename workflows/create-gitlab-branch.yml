@@ -1,7 +1,9 @@
 name: Create GitLab Branch
 
 on:
+  workflow_dispatch:
   repository_dispatch:
+    types: [linear_issue_in_progress]
 
 jobs:
   create-branch:
@@ -10,13 +12,44 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+       - name: Set up Node.js
+         uses: actions/setup-node@v2
+         with:
+           node-version: '14'
+
+      - name: Install dependencies
+        run: npm install axios
+
       - name: Create Branch on GitLab
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           GITLAB_PROJECT_ID: 48924354
           BRANCH_NAME: issue-123-new-feature
         run: |
-          curl --request POST \
-            --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-            --data "branch=$BRANCH_NAME&ref=main" \
-            "https://gitlab.com/thinkdeep-ai/meshstream/apps/neutronis/-/branches"
+          const axios = require('axios');
+  
+          const linearWebhookPayload = process.env.LINEAR_WEBHOOK_PAYLOAD;
+          const issue = JSON.parse(linearWebhookPayload);
+  
+          if (issue.action === 'in_progress') {
+            const branchName = `issue-${issue.id}-${issue.title.replace(/\s+/g, '-')}`;
+  
+            axios.post(
+              `https://gitlab.com/api/v4/projects/${process.env.GITLAB_PROJECT_ID}/repository/branches`,
+              {
+                branch: branchName,
+                ref: 'main', // or whatever your default branch is
+              },
+              {
+                headers: {
+                  'Private-Token': process.env.GITLAB_TOKEN,
+                },
+              }
+            )
+            .then(response => {
+              console.log('Branch created successfully');
+            })
+            .catch(error => {
+              console.error('Error creating branch:', error);
+            });
+          }
