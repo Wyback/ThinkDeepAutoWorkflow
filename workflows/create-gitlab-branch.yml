@@ -1,0 +1,22 @@
+name: Create GitLab Branch
+
+on:
+  repository_dispatch:
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create Branch on GitLab
+        env:
+          GITLAB_TOKEN: glpat-uFSGWN_s2BWHEYD2c2zf
+          GITLAB_PROJECT_ID: 48924354
+          BRANCH_NAME: issue-123-new-feature
+        run: |
+          curl --request POST \
+            --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+            --data "branch=$BRANCH_NAME&ref=main" \
+            "https://gitlab.com/thinkdeep-ai/meshstream/apps/neutronis/-/branches"
