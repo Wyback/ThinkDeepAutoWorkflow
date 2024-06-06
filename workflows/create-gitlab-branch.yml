@@ -12,7 +12,7 @@ jobs:
 
       - name: Create Branch on GitLab
         env:
-          GITLAB_TOKEN: glpat-uFSGWN_s2BWHEYD2c2zf
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           GITLAB_PROJECT_ID: 48924354
           BRANCH_NAME: issue-123-new-feature
         run: |
